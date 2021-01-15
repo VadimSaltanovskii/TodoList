@@ -1,0 +1,13 @@
+.App {
+  background-color: black;
+  color: orangered;
+  font-family: cursive;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.App > div {
+  margin: 20px;
+}
