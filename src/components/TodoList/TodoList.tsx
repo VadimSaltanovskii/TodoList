@@ -4,10 +4,11 @@ import { Rating } from '../Rating/Rating'
 import { FilterValuesType } from '../../App'
 
 export type TodoListPropsType = {
+    id: string
     title: string
     tasks: Array<OneTaskPropsType>
     removeTask: (id: string) => void
-    changeFilter: (newValue: FilterValuesType) => void
+    changeFilter: (todoListId: string, newValue: FilterValuesType) => void
     addTask: (title: string) => void
     changeIsDone: (id: string, newIsDone: boolean) => void
     filter: FilterValuesType
@@ -49,13 +50,13 @@ export function TodoList(props: TodoListPropsType) {
     }
 
     const allButtonOnClickHandler = () => {
-        props.changeFilter('All')
+        props.changeFilter(props.id, 'All')
     }
     const activeButtonOnClickHandler = () => {
-        props.changeFilter('Active')
+        props.changeFilter(props.id, 'Active')
     }
     const completedButtonOnClickHandler = () => {
-        props.changeFilter('Completed')
+        props.changeFilter(props.id, 'Completed')
     }
 
     return (
