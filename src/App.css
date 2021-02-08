@@ -1,13 +1,25 @@
 .App {
-  background-color: black;
-  color: orangered;
-  font-family: cursive;
+  background-color: deepskyblue;
   display: flex;
-  flex-wrap: wrap;
   flex-direction: row;
+  align-items: flex-start;
+  align-self: flex-start;
   justify-content: space-around;
+  flex-wrap: wrap;
 }
 
-.App > div {
-  margin: 20px;
+.error {
+  border: red 2px solid;
+}
+
+.error-message {
+  color: red;
+}
+
+.active-filter {
+  background-color: deepskyblue;
+}
+
+.isDone {
+  opacity: 0.5;
 }

@@ -1,65 +1,95 @@
 import React, { useState } from 'react';
+import logo from './logo.svg';
 import './App.css';
-import { TodoList } from './components/TodoList'
-import { ListType } from './components/TodoList'
+import { OneTaskPropsType, TodoList, TodoListPropsType } from './components/TodoList/TodoList';
 import { v1 } from 'uuid';
 
-export type FilterValuesType = 'All' | 'Completed' | 'Active'
+export type FilterValuesType = 'All' | 'Active' | 'Completed'
 
-export function App() {
-
-    // BLL DATA
-    let initlist1: Array<ListType> = [
-        { number: v1(), name: 'HTML', isDone: true },
-        { number: v1(), name: 'CSS', isDone: false },
-        { number: v1(), name: 'JS', isDone: true },
-        { number: v1(), name: 'Angular', isDone: false },
-        { number: v1(), name: 'Vue', isDone: false },
-        { number: v1(), name: 'Event Loop', isDone: true },
-        { number: v1(), name: 'Web API', isDone: true },
-    ]
-
-    //стейт для списка и фильтрации
-    let [filter, setFilter] = useState<FilterValuesType>('All')
-    let [list1, setLists1] = useState(initlist1)
-
-    // функция удаления записи
-    function removeTask1(number: string) {
-        let filteredList1 = list1.filter(element => element.number !== number)
-        setLists1(filteredList1)
-    }
-
-    // функция добавления записи
-    function addTask1(value: string) {
-        let newTask: ListType = {
-            number: v1(),
-            name: value,
-            isDone: false,
-        }
-        setLists1([...list1, newTask])
-    }
-
-    // функция фильтрации записей
-    function changeFilter(value: FilterValuesType) {
-        setFilter(value)
-    }
-
-    let listForTodo = list1
-    if (filter === 'Completed') {
-        listForTodo = list1.filter(task => task.isDone === true)
-    }
-    if (filter === 'Active') {
-        listForTodo = list1.filter(task => task.isDone === false)
-    }
-
-    return (
-        <div className={'App'}>
-            <TodoList
-                title={'What to learn'}
-                list={listForTodo}
-                removeTask={removeTask1}
-                filteredTask={changeFilter}
-                addTask={addTask1} />
-        </div>
-    )
+export type OneTodoListType = {
+  id: string
+  title: string
+  filter: FilterValuesType
 }
+export type TodoListsType = Array<OneTodoListType>
+
+
+function App() {
+
+  // Стейт для удаления Заданий
+  let [stateLearnTasks, setTasks] = useState<Array<OneTaskPropsType>>([
+    { id: String(Math.floor(Math.random()*100)), title: 'HTML', isDone: true },
+    { id: String(Math.floor(Math.random()*100)), title: 'JS', isDone: true },
+    { id: String(Math.floor(Math.random()*100)), title: 'CSS', isDone: true },
+    { id: String(Math.floor(Math.random()*100)), title: 'React', isDone: false },
+    { id: String(Math.floor(Math.random()*100)), title: 'Redux', isDone: true },
+    { id: String(Math.floor(Math.random()*100)), title: 'Angular', isDone: false },
+  ])
+
+  // Стейт для фильтрации заданий
+  let [stateFilter, setFilter] = useState<FilterValuesType>('All') //стал ненужен
+
+  function removeTask(id: string) {
+    setTasks(stateLearnTasks.filter(oneTask => oneTask.id !== id))
+  }
+
+  function addTask(title: string) {
+    let newTask: OneTaskPropsType = {
+      id: v1(),
+      title: title,
+      isDone: false
+    }
+    setTasks([...stateLearnTasks, newTask])
+  }
+
+  function changeFilter(newValue: FilterValuesType) {
+    setFilter(newValue)
+  }
+
+  // Кликабельность чекбокса
+  function changeIsDone(id: string, newIsDone: boolean) {
+    let requiredTask = stateLearnTasks.find((oneTask) => oneTask.id === id)
+    requiredTask ? requiredTask.isDone = newIsDone : alert('Cant find')
+    setTasks([...stateLearnTasks])
+  }
+
+  // Урок 6, несколько TodoLists
+  let todoLists: TodoListsType = [
+    { id: v1(), title: 'What to learn', filter: 'Completed' },
+    { id: v1(), title: 'What to buy', filter: 'All' },
+    { id: v1(), title: 'What to eat', filter: 'All' },
+    { id: v1(), title: 'What you want', filter: 'Active' },
+  ]
+
+  return (
+    <div className="App">
+      {
+        todoLists.map((oneTodoList) => {
+          // Фильтрация 
+          let finalStateLearnTasks = stateLearnTasks
+
+          if (oneTodoList.filter === 'Completed') {
+            finalStateLearnTasks = stateLearnTasks.filter(oneTask => oneTask.isDone === true)
+          }
+
+          if (oneTodoList.filter === 'Active') {
+            finalStateLearnTasks = stateLearnTasks.filter(oneTask => oneTask.isDone === false)
+          }
+
+          return (
+            <TodoList
+              title={oneTodoList.title}
+              tasks={finalStateLearnTasks}
+              removeTask={removeTask}
+              changeFilter={changeFilter}
+              addTask={addTask}
+              changeIsDone={changeIsDone}
+              filter={oneTodoList.filter}
+            />)
+        })
+      }
+    </div>
+  );
+}
+
+export default App;
