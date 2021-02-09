@@ -7,11 +7,12 @@ export type TodoListPropsType = {
     id: string
     title: string
     tasks: Array<OneTaskPropsType>
-    removeTask: (id: string) => void
-    changeFilter: (todoListId: string, newValue: FilterValuesType) => void
-    addTask: (title: string) => void
-    changeIsDone: (id: string, newIsDone: boolean) => void
+    removeTask: (id: string, todoListId: string) => void
+    changeFilter: (newValue: FilterValuesType, todoListId: string) => void
+    addTask: (title: string, todoListId: string) => void
+    changeIsDone: (id: string, newIsDone: boolean, todoListId: string) => void
     filter: FilterValuesType
+    removeTodoList: (todoListId: string) => void
 }
 
 export type OneTaskPropsType = {
@@ -33,7 +34,7 @@ export function TodoList(props: TodoListPropsType) {
     const inputOnKeyPressHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
         setError(false)
         if (event.key === 'Enter' && inputText.trim() !== '') {
-            props.addTask(inputText)
+            props.addTask(inputText, props.id)
             setInputText('')
         } else {
             // setError('Title is required')
@@ -44,24 +45,28 @@ export function TodoList(props: TodoListPropsType) {
         if (inputText.trim() === '') {
             setError('Title is required')
         } else {
-            props.addTask(inputText.trim())
+            props.addTask(inputText.trim(), props.id)
             setInputText('')
         }
     }
 
+    const deleteTodoListButtonOnClickHandler = () => {
+        props.removeTodoList(props.id)
+    }
+
     const allButtonOnClickHandler = () => {
-        props.changeFilter(props.id, 'All')
+        props.changeFilter('All', props.id)
     }
     const activeButtonOnClickHandler = () => {
-        props.changeFilter(props.id, 'Active')
+        props.changeFilter('Active', props.id)
     }
     const completedButtonOnClickHandler = () => {
-        props.changeFilter(props.id, 'Completed')
+        props.changeFilter('Completed', props.id)
     }
 
     return (
         <div className={TodoListStyle.oneListBlock}>
-            <i><h3>{props.title}</h3></i>
+            <i><h3>{props.title} <button onClick={deleteTodoListButtonOnClickHandler}>Delete list</button></h3></i>
             <div>
                 <input
                     value={inputText}
@@ -78,11 +83,11 @@ export function TodoList(props: TodoListPropsType) {
 
                     // Генерируется много функций в map
                     const removeButtonOnClickHandler = () => {
-                        props.removeTask(oneTask.id)
+                        props.removeTask(oneTask.id, props.id)
                     }
 
                     const checkboxOnChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-                        props.changeIsDone(oneTask.id, event.currentTarget.checked)
+                        props.changeIsDone(oneTask.id, event.currentTarget.checked, props.id)
                     }
 
                     return (

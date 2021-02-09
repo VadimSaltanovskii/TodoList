@@ -16,66 +16,91 @@ export type TodoListsType = Array<OneTodoListType>
 
 function App() {
 
-  // Стейт для удаления Заданий
-  let [stateLearnTasks, setTasks] = useState<Array<OneTaskPropsType>>([
-    { id: String(Math.floor(Math.random() * 100)), title: 'HTML', isDone: true },
-    { id: String(Math.floor(Math.random() * 100)), title: 'JS', isDone: true },
-    { id: String(Math.floor(Math.random() * 100)), title: 'CSS', isDone: true },
-    { id: String(Math.floor(Math.random() * 100)), title: 'React', isDone: false },
-    { id: String(Math.floor(Math.random() * 100)), title: 'Redux', isDone: true },
-    { id: String(Math.floor(Math.random() * 100)), title: 'Angular', isDone: false },
+
+  let whatToLearnId = v1()
+  let whatYouWantId = v1()
+  // Ассоциативный массив для общего стейта всех листов
+  let [initialTasks, setTasks] = useState({
+    [whatToLearnId]: [
+      { id: v1(), title: 'HTML', isDone: true },
+      { id: v1(), title: 'JS', isDone: true },
+      { id: v1(), title: 'CSS', isDone: true },
+      { id: v1(), title: 'React', isDone: false },
+      { id: v1(), title: 'Redux', isDone: true },
+      { id: v1(), title: 'Angular', isDone: false },
+    ],
+    [whatYouWantId]: [
+      { id: v1(), title: 'Macbook', isDone: false },
+      { id: v1(), title: 'BMW 5', isDone: false },
+      { id: v1(), title: 'House', isDone: false },
+      { id: v1(), title: 'Son', isDone: false },
+      { id: v1(), title: 'Iphone', isDone: false },
+    ],
+  })
+  let [todoLists, setTodoLists] = useState<TodoListsType>([
+    { id: whatToLearnId, title: 'What to learn', filter: 'All' },
+    { id: whatYouWantId, title: 'What you want', filter: 'Active' }
   ])
 
-  // Стейт для фильтрации заданий
-  // let [stateFilter, setFilter] = useState<FilterValuesType>('All') //стал ненужен
-
-  function removeTask(id: string) {
-    setTasks(stateLearnTasks.filter(oneTask => oneTask.id !== id))
+  function removeTask(id: string, todoListId: string) {
+    // debugger
+    let currentTodoList = initialTasks[todoListId]
+    let filteredTasks = currentTodoList.filter(oneTask => oneTask.id !== id)
+    initialTasks[todoListId] = filteredTasks
+    setTasks({ ...initialTasks })
   }
 
-  function addTask(title: string) {
+  function addTask(title: string, todoListId: string) {
     let newTask: OneTaskPropsType = {
       id: v1(),
       title: title,
       isDone: false
     }
-    setTasks([...stateLearnTasks, newTask])
+    let currentTodoList = initialTasks[todoListId]
+    let updatedTodoList = [...currentTodoList, newTask]
+    initialTasks[todoListId] = updatedTodoList
+    setTasks({ ...initialTasks })
   }
 
-  function changeFilter(todoListId: string, newValue: FilterValuesType) {
-    let todoList = todoLists.find((oneTodoList) => oneTodoList.id === todoListId)
-    todoList ? todoList.filter = newValue : alert('TodoList not found')
+  function changeFilter(newValue: FilterValuesType, todoListId: string) {
+    let currentTodoList = todoLists.find((oneTodoList) => oneTodoList.id === todoListId)
+    if (currentTodoList) {
+      currentTodoList.filter = newValue
+    }
     setTodoLists([...todoLists])
   }
 
   // Кликабельность чекбокса
-  function changeIsDone(id: string, newIsDone: boolean) {
-    let requiredTask = stateLearnTasks.find((oneTask) => oneTask.id === id)
-    requiredTask ? requiredTask.isDone = newIsDone : alert('Cant find')
-    setTasks([...stateLearnTasks])
+  function changeIsDone(id: string, newIsDone: boolean, todoListId: string) {
+    let tasks = initialTasks[todoListId]
+    let requiredTask = tasks.find((oneTask) => oneTask.id === id)
+    if (requiredTask) {
+      requiredTask.isDone = newIsDone
+      setTasks({ ...initialTasks })
+    }
   }
 
-  // Урок 6, несколько TodoLists
-  let [todoLists, setTodoLists] = useState<TodoListsType>([
-    { id: v1(), title: 'What to learn', filter: 'Completed' },
-    { id: v1(), title: 'What to buy', filter: 'All' },
-    { id: v1(), title: 'What to eat', filter: 'All' },
-    { id: v1(), title: 'What you want', filter: 'Active' },
-  ])
+  // удаление todoList
+  function removeTodoList(todoListId: string) {
+    let filteredTodoList = todoLists.filter((oneTodoList) => oneTodoList.id !== todoListId)
+    setTodoLists(filteredTodoList)
+    delete initialTasks[todoListId]
+    setTasks({...initialTasks})
+  }
 
   return (
     <div className="App">
       {
         todoLists.map((oneTodoList) => {
           // Фильтрация 
-          let finalStateLearnTasks = stateLearnTasks
+          let finalInitialTasks = initialTasks[oneTodoList.id]
 
           if (oneTodoList.filter === 'Completed') {
-            finalStateLearnTasks = stateLearnTasks.filter(oneTask => oneTask.isDone === true)
+            finalInitialTasks = initialTasks[oneTodoList.id].filter((oneTask) => oneTask.isDone === true)
           }
 
           if (oneTodoList.filter === 'Active') {
-            finalStateLearnTasks = stateLearnTasks.filter(oneTask => oneTask.isDone === false)
+            finalInitialTasks = initialTasks[oneTodoList.id].filter((oneTask) => oneTask.isDone === false)
           }
 
           return (
@@ -83,12 +108,13 @@ function App() {
               key={oneTodoList.id}
               id={oneTodoList.id}
               title={oneTodoList.title}
-              tasks={finalStateLearnTasks}
+              tasks={finalInitialTasks}
               removeTask={removeTask}
               changeFilter={changeFilter}
               addTask={addTask}
               changeIsDone={changeIsDone}
               filter={oneTodoList.filter}
+              removeTodoList={removeTodoList}
             />)
         })
       }
