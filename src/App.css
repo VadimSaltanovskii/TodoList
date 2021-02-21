@@ -9,7 +9,7 @@
 }
 
 .error {
-  border: red 2px solid;
+  border: 2px solid red;
 }
 
 .error-message {
@@ -17,9 +17,17 @@
 }
 
 .active-filter {
-  background-color: deepskyblue;
+  background-color: greenyellow;
 }
 
-.isDone {
+.is-done {
   opacity: 0.5;
+}
+
+.todoList {
+  border: 2px solid black;
+  background-color: whitesmoke;
+  border-radius: 10%;
+  padding: 5px 30px;
+  margin: 10px;
 }

@@ -1,117 +1,122 @@
-import React, { useState } from 'react'
-import TodoListStyle from './TodoList.module.css'
+import React, { useState, ChangeEvent, KeyboardEvent } from 'react'
 import { Rating } from '../Rating/Rating'
-import { FilterValuesType } from '../../App'
+import { RatingPropsType } from '../Rating/Rating'
+import { filterForAllTasksType, RatingType } from '../../App'
 
-export type TodoListPropsType = {
+export type OneTaskType = {
     id: string
-    title: string
-    tasks: Array<OneTaskPropsType>
-    removeTask: (id: string, todoListId: string) => void
-    changeFilter: (newValue: FilterValuesType, todoListId: string) => void
-    addTask: (title: string, todoListId: string) => void
-    changeIsDone: (id: string, newIsDone: boolean, todoListId: string) => void
-    filter: FilterValuesType
-    removeTodoList: (todoListId: string) => void
+    taskTitle: string
+    isDone: boolean
 }
 
-export type OneTaskPropsType = {
+type TodoListPropsType = {
     id: string
     title: string
-    isDone: boolean
+    tasks: Array<OneTaskType>
+    rating: RatingType
+    deleteOneTask: (idTask: string, idTodoList: string) => void
+    changeFilter: (value: filterForAllTasksType, todoListId: string) => void
+    addOneTask: (title: string, idTodoList: string) => void
+    changeIsDone: (idTask: string, newStatus: boolean, idTodoList: string) => void
+    filter: filterForAllTasksType
+    deleteTodoList: (idTodoList: string) => void
 }
 
 export function TodoList(props: TodoListPropsType) {
 
-    let [inputText, setInputText] = useState('')
+    let [titleNewTask, setTitleNewTask] = useState('')
+    let [error, setError] = useState<string>('')
 
-    let [error, setError] = useState<string | boolean>(false)
-
-    const inputOnChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setInputText(event.currentTarget.value)
+    //1
+    function inputOnChange(event: ChangeEvent<HTMLInputElement>) {
+        setTitleNewTask(event.currentTarget.value)
     }
-
-    const inputOnKeyPressHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        setError(false)
-        if (event.key === 'Enter' && inputText.trim() !== '') {
-            props.addTask(inputText, props.id)
-            setInputText('')
-        } else {
-            // setError('Title is required')
+    //2
+    function inputKeyPress(event: KeyboardEvent<HTMLInputElement>) {
+        setError('')
+        if (event.key === 'Enter' && titleNewTask.trim() !== '') {
+            props.addOneTask(titleNewTask.trim(), props.id)
+            setTitleNewTask('')
+        }
+        if (event.key === 'Enter' && titleNewTask.trim() === '') {
+            setError('Поле обязательно')
+        }
+        else {
+            return
         }
     }
-
-    const addButtonOnClickHandler = () => {
-        if (inputText.trim() === '') {
-            setError('Title is required')
-        } else {
-            props.addTask(inputText.trim(), props.id)
-            setInputText('')
+    function addTaskButtonHandler() {
+        if (titleNewTask.trim() !== '') {
+            props.addOneTask(titleNewTask.trim(), props.id)
+            setTitleNewTask('')
+        }
+        else {
+            setError('Поле обязательно')
+            return
         }
     }
-
-    const deleteTodoListButtonOnClickHandler = () => {
-        props.removeTodoList(props.id)
+    //4
+    function onAllClickHandler() {
+        props.changeFilter('all', props.id)
+    }
+    function onActiveClickHandler() {
+        props.changeFilter('active', props.id)
+    }
+    function onCompletedClickHandler() {
+        props.changeFilter('completed', props.id)
     }
 
-    const allButtonOnClickHandler = () => {
-        props.changeFilter('All', props.id)
-    }
-    const activeButtonOnClickHandler = () => {
-        props.changeFilter('Active', props.id)
-    }
-    const completedButtonOnClickHandler = () => {
-        props.changeFilter('Completed', props.id)
+    function onDeleteListClickHandler() {
+        props.deleteTodoList(props.id)
     }
 
     return (
-        <div className={TodoListStyle.oneListBlock}>
-            <i><h3>{props.title} <button onClick={deleteTodoListButtonOnClickHandler}>Delete list</button></h3></i>
+        <div className={'todoList'}>
+            <i><h3>{props.title} <button onClick={onDeleteListClickHandler}>Удалить лист</button></h3></i>
             <div>
                 <input
-                    value={inputText}
-                    placeholder={'Enter new task'}
-                    onChange={inputOnChangeHandler}
-                    onKeyPress={inputOnKeyPressHandler}
+                    type="text"
+                    value={titleNewTask}
+                    onChange={inputOnChange}
+                    onKeyPress={inputKeyPress}
                     className={error ? 'error' : ''} />
-                <button onClick={addButtonOnClickHandler}>Add</button>
+                <button onClick={addTaskButtonHandler}>Добавить</button>
                 {error && <div className={'error-message'}>{error}</div>}
-
             </div>
-            <ol>
-                {props.tasks.map((oneTask) => {
+            <ul>
+                {
+                    props.tasks.map((oneTask) => {
+                        //3 создается в мапе много функций
+                        function deleteOnClickHandler() {
+                            props.deleteOneTask(oneTask.id, props.id)
+                        }
+                        function changeIsDoneHandler(event: ChangeEvent<HTMLInputElement>) {
+                            props.changeIsDone(oneTask.id, event.currentTarget.checked, props.id)
+                        }
 
-                    // Генерируется много функций в map
-                    const removeButtonOnClickHandler = () => {
-                        props.removeTask(oneTask.id, props.id)
-                    }
-
-                    const checkboxOnChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-                        props.changeIsDone(oneTask.id, event.currentTarget.checked, props.id)
-                    }
-
-                    return (
-                        <li key={oneTask.id} className={oneTask.isDone ? 'isDone' : ''}>
+                        return <li key={oneTask.id} className={oneTask.isDone ? 'is-done' : ''}>
+                            {/* <span>ID: {oneTask.id}</span> */}
                             <input
                                 type={'checkbox'}
                                 checked={oneTask.isDone}
-                                onChange={checkboxOnChangeHandler}
+                                onChange={changeIsDoneHandler}
                             />
-                            <span>id:{oneTask.id} </span>
-                            <span><b>{oneTask.title} </b></span>
-                            <button onClick={removeButtonOnClickHandler}>Delete</button>
+                            <span><b>{oneTask.taskTitle}</b> </span>
+                            <button onClick={deleteOnClickHandler}>Удалить</button>
                         </li>
-                    )
-                })}
-            </ol>
-            <div className={TodoListStyle.filtration}>
-                <h4>Filtration</h4>
-                <button className={props.filter === 'All' ? 'active-filter' : ''} onClick={allButtonOnClickHandler}>All</button>
-                <button className={props.filter === 'Active' ? 'active-filter' : ''} onClick={activeButtonOnClickHandler}>Active</button>
-                <button className={props.filter === 'Completed' ? 'active-filter' : ''} onClick={completedButtonOnClickHandler}>Completed</button>
+                    })
+                }
+            </ul>
+            <div>
+                <button className={props.filter === 'all' ? 'active-filter' : ''} onClick={onAllClickHandler}>Все</button>
+                <button className={props.filter === 'active' ? 'active-filter' : ''} onClick={onActiveClickHandler}>Активные</button>
+                <button className={props.filter === 'completed' ? 'active-filter' : ''} onClick={onCompletedClickHandler}>Выполненные</button>
             </div>
-            <h4>Difficult rating</h4>
-            <Rating countStars={4} />
+            <div>
+                <br></br>
+                <span><i><b>Сложность списка: </b></i></span>
+                <span><Rating countStars={props.rating} /></span>
+            </div>
         </div>
     )
 }
