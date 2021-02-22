@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, KeyboardEvent } from 'react'
 import { Rating } from '../Rating/Rating'
 import { RatingPropsType } from '../Rating/Rating'
 import { filterForAllTasksType, RatingType } from '../../App'
+import { AddItemForm } from '../AddItemForm/AddItemForm'
 
 export type OneTaskType = {
     id: string
@@ -24,38 +25,6 @@ type TodoListPropsType = {
 
 export function TodoList(props: TodoListPropsType) {
 
-    let [titleNewTask, setTitleNewTask] = useState('')
-    let [error, setError] = useState<string>('')
-
-    //1
-    function inputOnChange(event: ChangeEvent<HTMLInputElement>) {
-        setTitleNewTask(event.currentTarget.value)
-    }
-    //2
-    function inputKeyPress(event: KeyboardEvent<HTMLInputElement>) {
-        setError('')
-        if (event.key === 'Enter' && titleNewTask.trim() !== '') {
-            props.addOneTask(titleNewTask.trim(), props.id)
-            setTitleNewTask('')
-        }
-        if (event.key === 'Enter' && titleNewTask.trim() === '') {
-            setError('Поле обязательно')
-        }
-        else {
-            return
-        }
-    }
-    function addTaskButtonHandler() {
-        if (titleNewTask.trim() !== '') {
-            props.addOneTask(titleNewTask.trim(), props.id)
-            setTitleNewTask('')
-        }
-        else {
-            setError('Поле обязательно')
-            return
-        }
-    }
-    //4
     function onAllClickHandler() {
         props.changeFilter('all', props.id)
     }
@@ -70,19 +39,16 @@ export function TodoList(props: TodoListPropsType) {
         props.deleteTodoList(props.id)
     }
 
+    function addItem(title: string) {
+        props.addOneTask(title, props.id)
+    }
+
     return (
         <div className={'todoList'}>
             <i><h3>{props.title} <button onClick={onDeleteListClickHandler}>Удалить лист</button></h3></i>
-            <div>
-                <input
-                    type="text"
-                    value={titleNewTask}
-                    onChange={inputOnChange}
-                    onKeyPress={inputKeyPress}
-                    className={error ? 'error' : ''} />
-                <button onClick={addTaskButtonHandler}>Добавить</button>
-                {error && <div className={'error-message'}>{error}</div>}
-            </div>
+            <AddItemForm
+                addItem={addItem}
+            />
             <ul>
                 {
                     props.tasks.map((oneTask) => {

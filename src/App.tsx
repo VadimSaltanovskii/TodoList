@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import './App.css'
 import { OneTaskType, TodoList } from './components/TodoList/TodoList'
 import { v1 } from 'uuid'
+import { AddItemForm } from './components/AddItemForm/AddItemForm'
 
 export type filterForAllTasksType = 'all' | 'active' | 'completed'
 
@@ -14,15 +15,11 @@ export type TodoListType = {
   rating: RatingType
 }
 
-function App() {
+export type allTasksType = {
+  [key: string]: Array<OneTaskType>
+}
 
-  // let [whatToLearnArray, setWhatToLearnArray] = useState<Array<OneTaskType>>([
-  //   { id: v1(), taskTitle: 'React', isDone: false, difficult: 5 },
-  //   { id: v1(), taskTitle: 'Redux', isDone: false, difficult: 5 },
-  //   { id: v1(), taskTitle: 'HTML', isDone: true, difficult: 2 },
-  //   { id: v1(), taskTitle: 'CSS', isDone: true, difficult: 3 },
-  //   { id: v1(), taskTitle: 'JS', isDone: true, difficult: 4 },
-  // ])
+function App() {
 
   let [todoListId1, todoListId2, todoListId3] = [v1(), v1(), v1()]
 
@@ -32,7 +29,7 @@ function App() {
     { id: todoListId3, title: 'What to do', filter: 'all', rating: 5 }
   ])
 
-  let [allTasks, setAllTasks] = useState(
+  let [allTasks, setAllTasks] = useState<allTasksType>(
     {
       [todoListId1]: [
         { id: v1(), taskTitle: 'React', isDone: false },
@@ -51,11 +48,11 @@ function App() {
         { id: v1(), taskTitle: 'BMW', isDone: true },
       ],
       [todoListId3]: [
-        { id: v1(), taskTitle: 'Job', isDone: false, difficult: 5 },
-        { id: v1(), taskTitle: 'House', isDone: false, difficult: 5 },
-        { id: v1(), taskTitle: 'Son', isDone: true, difficult: 5 },
-        { id: v1(), taskTitle: 'Happy life', isDone: true, difficult: 5 },
-        { id: v1(), taskTitle: 'Money', isDone: true, difficult: 5 },
+        { id: v1(), taskTitle: 'Job', isDone: false },
+        { id: v1(), taskTitle: 'House', isDone: false },
+        { id: v1(), taskTitle: 'Son', isDone: true },
+        { id: v1(), taskTitle: 'Happy life', isDone: true },
+        { id: v1(), taskTitle: 'Money', isDone: true },
       ],
     }
   )
@@ -105,8 +102,21 @@ function App() {
     setAllTasks(allTasks)
   }
 
+  function addTodoList(title: string) {
+    let newTodoList: TodoListType = {
+      id: v1(),
+      title: title,
+      filter: 'all',
+      rating: 0
+    }
+    setTodoLists([...todoLists, newTodoList])
+    setAllTasks({ ...allTasks, [newTodoList.id]: [] })
+  }
+
   return (
     <div className={'App'}>
+      <AddItemForm
+        addItem={addTodoList} />
       {
         todoLists.map((oneTodoList) => {
 
