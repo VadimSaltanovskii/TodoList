@@ -3,6 +3,7 @@ import { Rating } from '../Rating/Rating'
 import { RatingPropsType } from '../Rating/Rating'
 import { filterForAllTasksType, RatingType } from '../../App'
 import { AddItemForm } from '../AddItemForm/AddItemForm'
+import { EditSpan } from '../EditSpan/EditSpan'
 
 export type OneTaskType = {
     id: string
@@ -21,6 +22,8 @@ type TodoListPropsType = {
     changeIsDone: (idTask: string, newStatus: boolean, idTodoList: string) => void
     filter: filterForAllTasksType
     deleteTodoList: (idTodoList: string) => void
+    changeTaskTitle: (id: string, newTitle: string, todoListid: string) => void
+    changeTodoListTitle: (id: string, newTitle: string) => void
 }
 
 export function TodoList(props: TodoListPropsType) {
@@ -43,9 +46,13 @@ export function TodoList(props: TodoListPropsType) {
         props.addOneTask(title, props.id)
     }
 
+    function changeTodoListTitle (newTitle: string) {
+        props.changeTodoListTitle(props.id, newTitle)
+    }
+
     return (
         <div className={'todoList'}>
-            <i><h3>{props.title} <button onClick={onDeleteListClickHandler}>Удалить лист</button></h3></i>
+            <i><h3><EditSpan title={props.title} onChange={changeTodoListTitle}/> <button onClick={onDeleteListClickHandler}>Удалить лист</button></h3></i>
             <AddItemForm
                 addItem={addItem}
             />
@@ -60,6 +67,12 @@ export function TodoList(props: TodoListPropsType) {
                             props.changeIsDone(oneTask.id, event.currentTarget.checked, props.id)
                         }
 
+                        function onChangeTitleHandler(newValue: string) {
+                            props.changeTaskTitle(oneTask.id, newValue, props.id)
+
+
+                        }
+
                         return <li key={oneTask.id} className={oneTask.isDone ? 'is-done' : ''}>
                             {/* <span>ID: {oneTask.id}</span> */}
                             <input
@@ -67,7 +80,8 @@ export function TodoList(props: TodoListPropsType) {
                                 checked={oneTask.isDone}
                                 onChange={changeIsDoneHandler}
                             />
-                            <span><b>{oneTask.taskTitle}</b> </span>
+                            {/* <span><b>{oneTask.taskTitle} </b></span> */}
+                            <EditSpan title={oneTask.taskTitle} onChange={onChangeTitleHandler} />
                             <button onClick={deleteOnClickHandler}>Удалить</button>
                         </li>
                     })
@@ -86,3 +100,4 @@ export function TodoList(props: TodoListPropsType) {
         </div>
     )
 }
+

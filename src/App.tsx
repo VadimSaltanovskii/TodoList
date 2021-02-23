@@ -87,6 +87,16 @@ function App() {
     }
   }
 
+  function changeTaskTitle(idTask: string, newTitle: string, idTodoList: string) {
+    let currentTodoList = allTasks[idTodoList]
+    let currentTask = currentTodoList.find((oneTask) => oneTask.id === idTask)
+    if (currentTask) {
+      currentTask.taskTitle = newTitle;
+      // allTasks[idTodoList] = [...currentTodoList]
+      setAllTasks({ ...allTasks })
+    }
+  }
+
   function changeFilter(value: filterForAllTasksType, todoListId: string) {
     let currentTodoList = todoLists.find((oneTodoList) => oneTodoList.id === todoListId)
     if (currentTodoList) {
@@ -111,6 +121,15 @@ function App() {
     }
     setTodoLists([...todoLists, newTodoList])
     setAllTasks({ ...allTasks, [newTodoList.id]: [] })
+  }
+
+  function changeTodoListTitle(id: string, newTitle: string) {
+    const currentTodoList = todoLists.find((oneTodoList) => oneTodoList.id === id)
+    if (currentTodoList) {
+      currentTodoList.title = newTitle
+      setTodoLists([...todoLists])
+    }
+
   }
 
   return (
@@ -146,7 +165,9 @@ function App() {
               addOneTask={addOneTask}
               changeIsDone={changeIsDone}
               filter={oneTodoList.filter}
-              deleteTodoList={deleteTodoList} />)
+              deleteTodoList={deleteTodoList}
+              changeTaskTitle={changeTaskTitle} 
+              changeTodoListTitle={changeTodoListTitle}/>)
         })
       }
     </div>
