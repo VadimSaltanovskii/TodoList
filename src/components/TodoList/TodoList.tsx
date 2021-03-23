@@ -1,103 +1,87 @@
-import React, { useState, ChangeEvent, KeyboardEvent } from 'react'
-import { Rating } from '../Rating/Rating'
-import { RatingPropsType } from '../Rating/Rating'
-import { filterForAllTasksType, RatingType } from '../../App'
-import { AddItemForm } from '../AddItemForm/AddItemForm'
-import { EditSpan } from '../EditSpan/EditSpan'
+import React, { ChangeEvent, KeyboardEvent, useState } from 'react';
+import TodoListStyles from './TodoList.module.css'
+import { FilterType, OneTask, RatingType } from '../../App'
+import { Rating } from '../Rating/Rating';
+import { AddItemForm } from '../AddTodoList/AddItemForm';
+import { EditSpan } from '../EditSpan/EditSpan';
+import { Button, Checkbox, IconButton } from '@material-ui/core';
+import { Delete } from '@material-ui/icons';
 
-export type OneTaskType = {
-    id: string
-    taskTitle: string
-    isDone: boolean
-}
-
-type TodoListPropsType = {
+type TodoListProps = {
     id: string
     title: string
-    tasks: Array<OneTaskType>
-    rating: RatingType
+    tasks: Array<OneTask>
     deleteOneTask: (idTask: string, idTodoList: string) => void
-    changeFilter: (value: filterForAllTasksType, todoListId: string) => void
-    addOneTask: (title: string, idTodoList: string) => void
-    changeIsDone: (idTask: string, newStatus: boolean, idTodoList: string) => void
-    filter: filterForAllTasksType
+    changeFilter: (newFilter: FilterType, idTodoList: string) => void
+    addOneTask: (newTitle: string, idTodoList: string) => void
+    changeIsDone: (idTask: string, idTodoList: string) => void
+    filter: FilterType
+    rating: RatingType
     deleteTodoList: (idTodoList: string) => void
-    changeTaskTitle: (id: string, newTitle: string, todoListid: string) => void
-    changeTodoListTitle: (id: string, newTitle: string) => void
+    changeTaskTitle: (newTitle: string, idTodoList: string, idTask: string) => void
+    changeTodoListTitle: (newTitle: string, idTodoList: string) => void
 }
 
-export function TodoList(props: TodoListPropsType) {
+export function TodoList(props: TodoListProps) {
 
-    function onAllClickHandler() {
-        props.changeFilter('all', props.id)
-    }
-    function onActiveClickHandler() {
-        props.changeFilter('active', props.id)
-    }
-    function onCompletedClickHandler() {
-        props.changeFilter('completed', props.id)
-    }
+    // Рефакторинг функций
 
-    function onDeleteListClickHandler() {
-        props.deleteTodoList(props.id)
-    }
-
-    function addItem(title: string) {
-        props.addOneTask(title, props.id)
-    }
-
-    function changeTodoListTitle (newTitle: string) {
-        props.changeTodoListTitle(props.id, newTitle)
-    }
+    const buttonAllClickHandler = () => props.changeFilter('all', props.id)
+    const buttonActiveClickHandler = () => props.changeFilter('active', props.id)
+    const buttonCompletedClickHandler = () => props.changeFilter('completed', props.id)
+    const deleteListButtonHandler = () => props.deleteTodoList(props.id)
+    const addOneTask = (title: string) => props.addOneTask(title, props.id)
+    const onChangeTodoListTitleHandler = (newTitle: string) => props.changeTodoListTitle(newTitle, props.id)
 
     return (
-        <div className={'todoList'}>
-            <i><h3><EditSpan title={props.title} onChange={changeTodoListTitle}/> <button onClick={onDeleteListClickHandler}>Удалить лист</button></h3></i>
+        <div className={TodoListStyles.main}>
+            <i><h3><EditSpan title={props.title} renameItem={onChangeTodoListTitleHandler} />
+                <IconButton aria-label="delete" onClick={deleteListButtonHandler} color={'secondary'}>
+                    <Delete />
+                </IconButton>
+            </h3></i>
             <AddItemForm
-                addItem={addItem}
-            />
+                addItem={addOneTask} />
             <ul>
                 {
                     props.tasks.map((oneTask) => {
-                        //3 создается в мапе много функций
-                        function deleteOnClickHandler() {
-                            props.deleteOneTask(oneTask.id, props.id)
-                        }
-                        function changeIsDoneHandler(event: ChangeEvent<HTMLInputElement>) {
-                            props.changeIsDone(oneTask.id, event.currentTarget.checked, props.id)
-                        }
-
-                        function onChangeTitleHandler(newValue: string) {
-                            props.changeTaskTitle(oneTask.id, newValue, props.id)
-
-
-                        }
-
-                        return <li key={oneTask.id} className={oneTask.isDone ? 'is-done' : ''}>
-                            {/* <span>ID: {oneTask.id}</span> */}
-                            <input
-                                type={'checkbox'}
-                                checked={oneTask.isDone}
-                                onChange={changeIsDoneHandler}
-                            />
-                            {/* <span><b>{oneTask.taskTitle} </b></span> */}
-                            <EditSpan title={oneTask.taskTitle} onChange={onChangeTitleHandler} />
-                            <button onClick={deleteOnClickHandler}>Удалить</button>
-                        </li>
+                        const deleteButtonHandler = () => props.deleteOneTask(oneTask.id, props.id)
+                        const checkboxChangeHandler = () => props.changeIsDone(oneTask.id, props.id)
+                        const onChangeHandler = (newTitle: string) => props.changeTaskTitle(newTitle, props.id, oneTask.id)
+                        return (
+                            <li
+                                key={oneTask.id}
+                                className={oneTask.isDone ? TodoListStyles.isDone : ''}
+                            >
+                                <Checkbox
+                                    checked={oneTask.isDone}
+                                    onChange={checkboxChangeHandler}
+                                    color={'secondary'} />
+                                <EditSpan title={oneTask.title} renameItem={onChangeHandler} />
+                                <Rating countOfStars={oneTask.difficult} />
+                                <IconButton aria-label="delete" onClick={deleteButtonHandler} color={'secondary'}>
+                                    <Delete />
+                                </IconButton>
+                            </li>
+                        )
                     })
                 }
             </ul>
+            <Button color={'secondary'} variant={props.filter === 'all'? 'contained': 'outlined'}
+                onClick={buttonAllClickHandler}
+            >All</Button>
+            <Button color={'secondary'} variant={props.filter === 'active'? 'contained': 'outlined'}
+                onClick={buttonActiveClickHandler}
+                className={props.filter === 'active' ? TodoListStyles.isActive : ''}
+            >Active</Button>
+            <Button color={'secondary'} variant={props.filter === 'completed'? 'contained': 'outlined'}
+                onClick={buttonCompletedClickHandler}
+                className={props.filter === 'completed' ? TodoListStyles.isActive : ''}
+            >Completed</Button>
             <div>
-                <button className={props.filter === 'all' ? 'active-filter' : ''} onClick={onAllClickHandler}>Все</button>
-                <button className={props.filter === 'active' ? 'active-filter' : ''} onClick={onActiveClickHandler}>Активные</button>
-                <button className={props.filter === 'completed' ? 'active-filter' : ''} onClick={onCompletedClickHandler}>Выполненные</button>
-            </div>
-            <div>
-                <br></br>
-                <span><i><b>Сложность списка: </b></i></span>
-                <span><Rating countStars={props.rating} /></span>
+                <p>Difficult to done</p>
+                <Rating countOfStars={props.rating} />
             </div>
         </div>
     )
 }
-
