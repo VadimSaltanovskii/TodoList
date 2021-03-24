@@ -7,7 +7,8 @@ import { v1 } from 'uuid';
 import { AddItemForm } from './components/AddItemForm/AddItemForm';
 import { AppBar, Button, Container, Grid, IconButton, Paper, Toolbar, Typography } from '@material-ui/core';
 import { Menu } from '@material-ui/icons';
-import { ChangeRatingTodoListAC, todoListsReducer } from './state/todolists-reducer';
+import { todoListsReducer, DeleteTodoListAC, AddTodoListAC, ChangeTitleTodoListAC, ChangeFilterTodoListAC, ChangeRatingTodoListAC } from './state/todolists-reducer';
+import { tasksReducer, deleteTaskAC, addTaskAC, changeTitleTaskAC, changeStatusTaskAC, changeRatingTaskAC } from './state/tasks-reducer';
 
 export type OneTask = {
   id: string
@@ -31,23 +32,17 @@ export type FilterType = 'all' | 'active' | 'completed';
 export type RatingType = 0 | 1 | 2 | 3 | 4 | 5
 
 
-function App() {
+function AppWithReducers() {
   // BLL
   let [todoListId1, todoListId2, todoListId3] = [v1(), v1(), v1()]
 
-  let [todoLists, setTodoLists] = useState<Array<TodoListType>>([
+  let [todoLists, dispatchToTodoListsReducer] = useReducer(todoListsReducer, [
     { id: todoListId1, title: 'What to buy', filter: 'all', rating: 5 },
     { id: todoListId2, title: 'What to learn', filter: 'all', rating: 4 },
     { id: todoListId3, title: 'Products', filter: 'all', rating: 0 },
   ])
 
-  let [todoLists2, dispatchToTodoListsReducer] = useReducer(todoListsReducer, [
-    { id: todoListId1, title: 'What to buy', filter: 'all', rating: 5 },
-    { id: todoListId2, title: 'What to learn', filter: 'all', rating: 4 },
-    { id: todoListId3, title: 'Products', filter: 'all', rating: 0 },
-  ])
-
-  let [initialTasks, setInitialTasks] = useState<InitialStateType>({
+  let [initialTasks, dispatchToTasksReducer] = useReducer(tasksReducer, {
     [todoListId1]: [
       { id: v1(), title: 'MacBook', isDone: false, difficult: 3 },
       { id: v1(), title: 'iPhone', isDone: true, difficult: 2 },
@@ -79,71 +74,40 @@ function App() {
 
   //functions for todoLists
   function deleteTodoList(idTodoList: string) {
-    setTodoLists(todoLists.filter((oneTodoList) => oneTodoList.id !== idTodoList))
-    delete initialTasks[idTodoList]
-    setInitialTasks({ ...initialTasks })
+    const action = DeleteTodoListAC(idTodoList)
+    dispatchToTodoListsReducer(action)
+    dispatchToTasksReducer(action)
   }
   function addOneTodoList(newTitle: string) {
-    if (todoLists.find((oneTodoList) => oneTodoList.title === newTitle) === undefined) {
-      let newTodoList: TodoListType = { id: v1(), title: newTitle, filter: 'all', rating: 0 }
-      setTodoLists([...todoLists, newTodoList])
-      initialTasks[newTodoList.id] = [
-        { id: v1(), title: 'Заглушка', isDone: false, difficult: 0 }
-      ]
-      setInitialTasks({ ...initialTasks })
-    }
+    const action = AddTodoListAC(newTitle)
+    dispatchToTodoListsReducer(action)
+    dispatchToTasksReducer(action)
   }
   function changeTodoListTitle(newTitle: string, idTodoList: string) {
-    let currentTodoList = todoLists.find((oneTodoList) => oneTodoList.id === idTodoList)
-    if (currentTodoList) {
-      currentTodoList.title = newTitle
-      setTodoLists([...todoLists])
-    }
+    dispatchToTodoListsReducer(ChangeTitleTodoListAC(idTodoList, newTitle))
   }
   function changeFilter(newFilter: FilterType, idTodoList: string): void {
-    let currentTodoList = todoLists.find((oneTodoList) => oneTodoList.id === idTodoList)
-    if (currentTodoList) {
-      currentTodoList.filter = newFilter
-      setTodoLists([...todoLists])
-    }
+    dispatchToTodoListsReducer(ChangeFilterTodoListAC(idTodoList, newFilter))
   }
-
   function changeRating(newRating: RatingType, idTodoList: string): void {
     dispatchToTodoListsReducer(ChangeRatingTodoListAC(idTodoList, newRating))
   }
 
   //functions for tasks
   function deleteOneTask(idTask: string, idTodoList: string): void {
-    let currentTodoList = initialTasks[idTodoList]
-    initialTasks[idTodoList] = currentTodoList.filter((oneTask) => oneTask.id !== idTask)
-    setInitialTasks({ ...initialTasks })
+    dispatchToTasksReducer(deleteTaskAC(idTodoList, idTask))
   }
   function addOneTask(newTitle: string, idTodoList: string) {
-    let currentTodoList = initialTasks[idTodoList]
-    if (currentTodoList.find((oneTask) => oneTask.title === newTitle) === undefined) {
-      let newTask: OneTask = { id: v1(), title: newTitle, isDone: false, difficult: 0 }
-      initialTasks[idTodoList] = [...currentTodoList, newTask]
-      setInitialTasks({ ...initialTasks })
-    } else {
-      alert('Title is exists')
-    }
+    dispatchToTasksReducer(addTaskAC(idTodoList, newTitle))
   }
   function changeIsDone(idTask: string, idTodoList: string) {
-    let currentTodoList = initialTasks[idTodoList]
-    let currentTask = currentTodoList.find((oneTask) => oneTask.id === idTask)
-    if (currentTask) {
-      currentTask.isDone = !currentTask.isDone
-      setInitialTasks({ ...initialTasks })
-    } else {
-      alert('Tasks not found')
-    }
+    dispatchToTasksReducer(changeStatusTaskAC(idTodoList, idTask))
   }
   function changeTaskTitle(newTitle: string, idTodoList: string, idTask: string) {
-    let currentTask = initialTasks[idTodoList].find((oneTask) => oneTask.id === idTask)
-    if (currentTask) {
-      currentTask.title = newTitle
-      setInitialTasks({ ...initialTasks })
-    }
+    dispatchToTasksReducer(changeTitleTaskAC(idTodoList, idTask, newTitle))
+  }
+  function changeTaskRating(newRating: RatingType, idTodoList: string, idTask: string) {
+    dispatchToTasksReducer(changeRatingTaskAC(idTodoList, idTask, newRating))
   }
 
   return (
@@ -212,4 +176,4 @@ function App() {
   );
 }
 
-export default App;
+export default AppWithReducers;

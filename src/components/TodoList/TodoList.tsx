@@ -2,7 +2,7 @@ import React, { ChangeEvent, KeyboardEvent, useState } from 'react';
 import TodoListStyles from './TodoList.module.css'
 import { FilterType, OneTask, RatingType } from '../../App'
 import { Rating } from '../Rating/Rating';
-import { AddItemForm } from '../AddTodoList/AddItemForm';
+import { AddItemForm } from '../AddItemForm/AddItemForm';
 import { EditSpan } from '../EditSpan/EditSpan';
 import { Button, Checkbox, IconButton } from '@material-ui/core';
 import { Delete } from '@material-ui/icons';
@@ -20,6 +20,7 @@ type TodoListProps = {
     deleteTodoList: (idTodoList: string) => void
     changeTaskTitle: (newTitle: string, idTodoList: string, idTask: string) => void
     changeTodoListTitle: (newTitle: string, idTodoList: string) => void
+    changeTodoListRating: (newRating: RatingType, idTodoList: string) => void
 }
 
 export function TodoList(props: TodoListProps) {
@@ -32,6 +33,8 @@ export function TodoList(props: TodoListProps) {
     const deleteListButtonHandler = () => props.deleteTodoList(props.id)
     const addOneTask = (title: string) => props.addOneTask(title, props.id)
     const onChangeTodoListTitleHandler = (newTitle: string) => props.changeTodoListTitle(newTitle, props.id)
+    const maxRating = () => props.changeTodoListRating(5, props.id)
+    const minRating = () => props.changeTodoListRating(0, props.id)
 
     return (
         <div className={TodoListStyles.main}>
@@ -81,6 +84,8 @@ export function TodoList(props: TodoListProps) {
             <div>
                 <p>Difficult to done</p>
                 <Rating countOfStars={props.rating} />
+                <button onClick={maxRating}>Max</button>
+                <button onClick={minRating}>Min</button>
             </div>
         </div>
     )
